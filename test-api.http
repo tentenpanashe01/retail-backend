@@ -1,0 +1,8 @@
+###
+
+curl -H "Authorization: Bearer <your-token>" http://localhost:8080/api/products
+GET http://localhost:8080/api/products
+Authorization: Bearer
+
+###
+
