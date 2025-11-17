@@ -32,68 +32,46 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                //  Disable CSRF for APIs
                 .csrf(csrf -> csrf.disable())
-
-                //  Allow cross-origin from React frontend
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-                //  Stateless (no session stored)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                //  Authorization rules
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ Public endpoints
                         .requestMatchers(
+                                "/users/login",
                                 "/api/users/login",
                                 "/api/users/register",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-resources/**",
-                                "/webjars/**"
+                                "/webjars/**",
+                                "/actuator/health",
+                                "/actuator/info"
                         ).permitAll()
-
-                        //  Allow basic health and info endpoints
-                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-
-                        //  Everything else requires authentication
                         .anyRequest().authenticated()
                 )
-
-                //  Add JWT filter before username/password filter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    /**
-     * ✅ Password encoder (BCrypt for strong security)
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * ✅ Authentication Manager (used in login)
-     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
-    /**
-     * ✅ CORS Configuration for frontend integration
-     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cors = new CorsConfiguration();
 
-        // ⚙️ Frontend URLs (update as needed)
         cors.setAllowedOrigins(List.of(
-                "http://localhost:3000", // React local
-                "http://127.0.0.1:3000",
-                "https://yourdomain.com" // optional deployment domain
+                "https://retailfront.netlify.app",
+                "http://localhost:5173",
+                "http://localhost:3000"
         ));
 
         cors.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
