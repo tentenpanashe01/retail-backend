@@ -39,6 +39,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/users/login",
                                 "/api/users/register",
+                                "/users/login",         // legacy path (optional)
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-resources/**",
@@ -63,23 +64,38 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
+    /**
+     * FINAL CORS CONFIG (handles Netlify + localhost + https wildcard)
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cors = new CorsConfiguration();
 
-        cors.setAllowedOrigins(List.of(
+        // Use allowedOriginPatterns so Netlify dynamic URLs don't break CORS
+        cors.setAllowedOriginPatterns(List.of(
                 "https://retailfront.netlify.app",
+                "https://*.netlify.app",
                 "http://localhost:5173",
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "http://localhost:5174"
         ));
 
-        cors.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        cors.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
+        cors.setAllowedMethods(Arrays.asList(
+                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+        ));
+
+        cors.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "X-Requested-With"
+        ));
+
         cors.setExposedHeaders(List.of("Authorization"));
         cors.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cors);
+
         return source;
     }
 }
